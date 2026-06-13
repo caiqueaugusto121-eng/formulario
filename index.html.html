@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastro de Usuários</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #120226;
+      --card:     rgba(255,255,255,0.06);
+      --purple:   #9b5fe0;
+      --pink:     #f72585;
+      --lavender: #f0eafa;
+      --muted:    rgba(240,234,250,0.5);
+      --border:   rgba(155,95,224,0.3);
+      --radius:   14px;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+    }
+
+    /* animated blobs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 520px; height: 520px;
+      background: radial-gradient(circle, #9b5fe0, transparent 70%);
+      top: -140px; left: -140px;
+      animation: drift 9s ease-in-out infinite alternate;
+    }
+    body::after {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, #f72585, transparent 70%);
+      bottom: -120px; right: -120px;
+      animation: drift 11s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(40px, 30px) scale(1.07); }
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 2.8rem 2.4rem 2.4rem;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 0 60px rgba(155,95,224,0.18);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--pink);
+      background: rgba(247,37,133,0.12);
+      border: 1px solid rgba(247,37,133,0.3);
+      padding: 0.22rem 0.7rem;
+      border-radius: 99px;
+      margin-bottom: 0.8rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--lavender);
+      line-height: 1.15;
+      margin-bottom: 0.4rem;
+    }
+    h1 span {
+      background: linear-gradient(90deg, var(--purple), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    /* divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin-bottom: 2rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .full { grid-column: 1 / -1; }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* animated gradient border on focus */
+    .input-wrap {
+      position: relative;
+      border-radius: var(--radius);
+      padding: 2px;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+    .input-wrap:focus-within {
+      background: linear-gradient(135deg, var(--purple), var(--pink), var(--purple));
+      background-size: 200% 200%;
+      animation: borderSpin 2s linear infinite;
+    }
+    @keyframes borderSpin {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    input, select {
+      width: 100%;
+      background: #1d0740;
+      color: var(--lavender);
+      border: none;
+      border-radius: calc(var(--radius) - 2px);
+      padding: 0.72rem 0.9rem;
+      font-family: inherit;
+      font-size: 0.93rem;
+      outline: none;
+      transition: background 0.2s;
+    }
+    input::placeholder { color: rgba(240,234,250,0.3); }
+    input:focus, select:focus { background: #220a4d; }
+    select { cursor: pointer; appearance: none; }
+    select option { background: #1d0740; }
+
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--purple);
+      pointer-events: none;
+      font-size: 0.9rem;
+    }
+
+    /* password eye toggle */
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 2.8rem; }
+    .eye-btn {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.2s;
+    }
+    .eye-btn:hover { color: var(--purple); }
+
+    /* terms */
+    .terms {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+    .terms input[type="checkbox"] {
+      width: 16px; height: 16px;
+      min-width: 16px;
+      accent-color: var(--purple);
+      margin-top: 0.1rem;
+      padding: 0;
+      cursor: pointer;
+      background: transparent;
+    }
+    .terms a { color: var(--purple); text-decoration: none; }
+    .terms a:hover { text-decoration: underline; }
+
+    .btn {
+      width: 100%;
+      margin-top: 1.4rem;
+      padding: 0.9rem;
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.97rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+      color: #fff;
+      box-shadow: 0 4px 24px rgba(247,37,133,0.3);
+      transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(247,37,133,0.4); filter: brightness(1.08); }
+    .btn:active { transform: translateY(0); }
+
+    .login-link {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 1.4rem;
+    }
+    .login-link a { color: var(--purple); text-decoration: none; font-weight: 600; }
+    .login-link a:hover { text-decoration: underline; }
+
+    /* success toast */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.75rem 1.4rem;
+      border-radius: 99px;
+      box-shadow: 0 8px 32px rgba(155,95,224,0.4);
+      transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+      z-index: 10;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 460px) {
+      .card { padding: 2rem 1.2rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .full { grid-column: 1; }
+      h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="badge">✦ Novo por aqui?</div>
+    <h1>Crie sua <span>conta</span></h1>
+    <p class="subtitle">Preencha os dados abaixo para se cadastrar.</p>
+    <div class="divider"></div>
+
+    <div class="form-grid" id="cadastroForm">
+
+      <div class="field">
+        <label for="nome">Nome</label>
+        <div class="input-wrap">
+          <input type="text" id="nome" placeholder="Ana" autocomplete="given-name" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="sobrenome">Sobrenome</label>
+        <div class="input-wrap">
+          <input type="text" id="sobrenome" placeholder="Silva" autocomplete="family-name" />
+        </div>
+      </div>
+
+      <div class="field full">
+        <label for="email">E-mail</label>
+        <div class="input-wrap">
+          <input type="email" id="email" placeholder="ana@exemplo.com" autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="field full">
+        <label for="usuario">Nome de usuário</label>
+        <div class="input-wrap">
+          <input type="text" id="usuario" placeholder="@anasilva" autocomplete="username" />
+        </div>
+      </div>
+
+      <div class="field full">
+        <label for="nascimento">Data de nascimento</label>
+        <div class="input-wrap">
+          <input type="date" id="nascimento" />
+        </div>
+      </div>
+
+      <div class="field full select-wrap">
+        <label for="perfil">Tipo de perfil</label>
+        <div class="input-wrap">
+          <select id="perfil" class="select-wrap">
+            <option value="">Selecione...</option>
+            <option>Estudante</option>
+            <option>Profissional</option>
+            <option>Empresa</option>
+            <option>Outro</option>
+          </select>
+          <span style="position:absolute;right:1.2rem;top:50%;transform:translateY(-50%);color:#9b5fe0;pointer-events:none;">▾</span>
+        </div>
+      </div>
+
+      <div class="field full">
+        <label for="senha">Senha</label>
+        <div class="input-wrap">
+          <div class="pw-wrap">
+            <input type="password" id="senha" placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+            <button class="eye-btn" type="button" onclick="togglePw('senha', this)" aria-label="Mostrar senha">👁</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field full">
+        <label for="confirma">Confirmar senha</label>
+        <div class="input-wrap">
+          <div class="pw-wrap">
+            <input type="password" id="confirma" placeholder="Repita a senha" autocomplete="new-password" />
+            <button class="eye-btn" type="button" onclick="togglePw('confirma', this)" aria-label="Mostrar senha">👁</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="full terms">
+        <input type="checkbox" id="termos" />
+        <label for="termos" style="text-transform:none;letter-spacing:0;font-weight:400;">
+          Li e aceito os <a href="#">Termos de Uso</a> e a <a href="#">Política de Privacidade</a>.
+        </label>
+      </div>
+
+    </div>
+
+    <button class="btn" onclick="handleSubmit()">Criar conta →</button>
+
+    <p class="login-link">Já tem conta? <a href="#">Entrar</a></p>
+  </div>
+
+  <div class="toast" id="toast">🎉 Cadastro realizado com sucesso!</div>
+
+  <script>
+    function togglePw(id, btn) {
+      const input = document.getElementById(id);
+      if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+      else { input.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    function handleSubmit() {
+      const fields = ['nome','sobrenome','email','usuario','nascimento','perfil','senha','confirma'];
+      const missing = fields.filter(f => !document.getElementById(f).value.trim());
+      if (missing.length) { shake(); return; }
+      if (document.getElementById('senha').value !== document.getElementById('confirma').value) {
+        alert('As senhas não coincidem!'); return;
+      }
+      if (!document.getElementById('termos').checked) {
+        alert('Aceite os termos para continuar.'); return;
+      }
+      showToast();
+    }
+
+    function shake() {
+      const card = document.querySelector('.card');
+      card.style.animation = 'none';
+      card.offsetHeight;
+      card.style.animation = 'shakeCard 0.4s ease';
+    }
+
+    const style = document.createElement('style');
+    style.textContent = `@keyframes shakeCard {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(4px)}
+    }`;
+    document.head.appendChild(style);
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+  </script>
+</body>
+</html>
